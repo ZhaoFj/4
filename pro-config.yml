@@ -1,0 +1,5 @@
+host: 'ddhanta.cn'
+port: 8848
+namespace: '33ef46b4-83ef-42a0-a4c2-61b148d0a518'
+dataid: 'shopcart.json'
+group: 'dev'

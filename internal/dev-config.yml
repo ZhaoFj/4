@@ -1,0 +1,36 @@
+host: '192.168.0.155'
+port: 8848
+namespace: 'edfa58f5-77cf-49f1-add4-3459c8ccfe98'
+dataid: 'account.json'
+group: 'dev'
+
+#db:
+#  host: '192.168.0.155'
+#  port: 3308
+#  db: 'account_miro_training'
+#  userName: "root"
+#  password: "123456"
+#
+#redis:
+#  host: '192.168.0.155'
+#  port: 6379
+#
+#consul:
+#  host: '192.168.0.155'
+#  port: 8500
+#
+#account_srv:
+#  srvName: "account_srv"
+#  host: '192.168.0.155'
+#  port: 9095
+#  tags:
+#    - zz
+#    - account_srv
+#
+#account_web:
+#  srvName: "account_web"
+#  host: '192.168.0.155'
+#  port: 8081
+#  tags:
+#    - zz
+#    - account_web

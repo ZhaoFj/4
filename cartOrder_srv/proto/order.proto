@@ -1,0 +1,71 @@
+syntax="proto3";
+option go_package="/pb";
+import "google/protobuf/empty.proto";
+
+service OrderService{
+    //新建订单
+    rpc CreateOrder(OrderItemReq) returns(OrderItemRes);
+    //订单列表
+    rpc OrderList(OrderPagingReq) returns(OrderListRes);
+    //订单详情
+    rpc OrderDetail(OrderItemReq) returns(OrderItemDetailRes);
+    //更改状态
+    rpc ChangeOrderStatus(OrderStatus) returns(google.protobuf.Empty);
+
+}
+
+message OrderItemReq{
+    int32 id=1;
+    int32 accountId=2;
+    string addr=3;
+    string postCode=4;
+    string receiver=5;
+    string mobile=6;
+    string payType=7;
+}
+
+message OrderItemRes{
+    int32 id=1;
+    int32 accountId=2;
+    string payType=3;
+    string orderNo=4;
+    float amount=5;
+    string addr=6;
+    string postCode=7;
+    string receiver=8;
+    string mobile=9;
+    string status=10;
+    string createTime=11;
+}
+
+message OrderPagingReq{
+    int32 accountId=1;
+    int32 pageNo=2;
+    int32 pageSize=3;
+}
+
+message OrderListRes{
+    int32 total=1;
+    repeated OrderItemRes itemlist=2;
+}
+
+message OrderProductRes{
+    int32 id=1;
+    int32 orderId=2;
+    int32 productId=3;
+    int32 num=4;
+    string productName=5;
+    float realPrice=6;
+    string coverImg=7;
+}
+
+message OrderItemDetailRes{
+    OrderItemRes order=1;
+    repeated OrderProductRes productList=2;
+}
+
+message OrderStatus{
+    int32 id=1;
+    string orderNum=2;
+    string status=3;
+}

@@ -1,0 +1,137 @@
+package handler
+
+import (
+	"context"
+	"fmt"
+	"net/http"
+	"strconv"
+
+	"micro-trainning-part4/cartOrder_srv/biz"
+	"micro-trainning-part4/cartOrder_srv/proto/pb"
+	"micro-trainning-part4/custom_error"
+	"micro-trainning-part4/internal"
+	"micro-trainning-part4/shopcart_web/req"
+
+	"github.com/gin-gonic/gin"
+	_ "github.com/mbobakov/grpc-consul-resolver" // It's important
+	"go.uber.org/zap"
+	"google.golang.org/grpc"
+)
+
+var shopCartServiceClient pb.ShopCartServiceClient
+
+func init() {
+	addr := fmt.Sprintf("%s:%d", internal.AppConf.ConsulConfig.Host, internal.AppConf.ConsulConfig.Port)
+	dailAddr := fmt.Sprintf("consul://%s/%s?wait=14s", addr, internal.AppConf.ShopCartSrvConfig.SrvName)
+	conn, err := grpc.Dial(dailAddr, grpc.WithInsecure(), grpc.WithDefaultServiceConfig(`{"loadBalancingPolicy": "round_robin"}`))
+	if err != nil {
+		s := fmt.Sprintf("ShopCartHandler-GRPC拨号失败:%s", err.Error())
+		zap.S().Fatal(s)
+	}
+
+	shopCartServiceClient = pb.NewShopCartServiceClient(conn)
+}
+
+func CartOrderListHandler(c *gin.Context) {
+	accountIdStr := c.DefaultQuery("accountId", "0")
+	accountId, err := strconv.Atoi(accountIdStr)
+	if err != nil {
+		c.JSON(http.StatusOK, gin.H{
+			"msg": custom_error.ParamError,
+		})
+		return
+	}
+	var req pb.AccountReq
+	req.AccountId = int32(accountId)
+	res, err := shopCartServiceClient.ShopCartItemList(context.Background(), &req)
+	if err != nil {
+		c.JSON(http.StatusOK, gin.H{
+			"msg": custom_error.GetShopCartListFail,
+		})
+	} else {
+		c.JSON(http.StatusOK, gin.H{
+			"msg":   "",
+			"total": res.Total,
+			"list":  res.ItemList,
+		})
+	}
+}
+
+func AddShopCartItemHandler(c *gin.Context) {
+	var shopCartReq req.ShopCartReq
+	err := c.ShouldBindJSON(&shopCartReq)
+	if err != nil {
+		zap.S().Error(err)
+		c.JSON(http.StatusOK, gin.H{
+			"msg": custom_error.ParamError,
+		})
+		return
+	}
+	r := biz.ConverShopCartReq2pb(shopCartReq)
+	res, err := shopCartServiceClient.AddShopCartItem(context.Background(), r)
+	if err != nil {
+		zap.S().Error(err)
+		c.JSON(http.StatusOK, gin.H{
+			"msg": custom_error.AddShopCartItemFail,
+		})
+		return
+	}
+	c.JSON(http.StatusOK, gin.H{
+		"msg": "",
+		"res": res,
+	})
+}
+
+func UpdateShopCartItemHandler(c *gin.Context) {
+	var shopCartReq req.ShopCartReq
+	err := c.ShouldBindJSON(&shopCartReq)
+	if err != nil {
+		zap.S().Error(err)
+		c.JSON(http.StatusOK, gin.H{
+			"msg": custom_error.ParamError,
+		})
+		return
+	}
+	r := biz.ConverShopCartReq2pb(shopCartReq)
+	_, err = shopCartServiceClient.UpdateShopCartItem(context.Background(), r)
+	if err != nil {
+		zap.S().Error(err)
+		c.JSON(http.StatusOK, gin.H{
+			"msg": custom_error.UpdateShopCartItemFail,
+		})
+		return
+	}
+	c.JSON(http.StatusOK, gin.H{
+		"msg": "",
+	})
+}
+
+func DeleteShopCartItemHandler(c *gin.Context) {
+	var delShopCartReq req.DelShopCartReq
+	err := c.ShouldBindJSON(&delShopCartReq)
+	if err != nil {
+		zap.S().Error(err)
+		c.JSON(http.StatusOK, gin.H{
+			"msg": custom_error.ParamError,
+		})
+		return
+	}
+	r := biz.ConverDelShopCartReq2pb(delShopCartReq)
+	_, err = shopCartServiceClient.DeleteShopCartItem(context.Background(), r)
+	if err != nil {
+		zap.S().Error(err)
+		c.JSON(http.StatusOK, gin.H{
+			"msg": custom_error.DeleteShopCartItemFail,
+		})
+		return
+	}
+	c.JSON(http.StatusOK, gin.H{
+		"msg": "",
+	})
+}
+
+func HealthHandler(c *gin.Context) {
+	c.JSON(http.StatusOK, gin.H{
+		"msg": "ok",
+	})
+}
