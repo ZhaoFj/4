@@ -10,4 +10,5 @@ const (
 	UpdateShopCartItemFail = "购物车更新失败"
 	DeleteShopCartItemFail = "购物车删除失败"
 	GetShopCartListFail    = "购物车列表获取失败"
+	OrderNotFound          = "查无此单"
 )

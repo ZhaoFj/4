@@ -2,8 +2,10 @@ package biz
 
 import (
 	"context"
+	"errors"
 	"micro-trainning-part4/cartOrder_srv/model"
 	"micro-trainning-part4/cartOrder_srv/proto/pb"
+	"micro-trainning-part4/custom_error"
 	"micro-trainning-part4/internal"
 	"micro-trainning-part4/util"
 
@@ -39,13 +41,30 @@ func (s CartOrderServer) OrderList(c context.Context, req *pb.OrderPagingReq) (*
 
 //订单详情
 func (s CartOrderServer) OrderDetail(c context.Context, req *pb.OrderItemReq) (*pb.OrderItemDetailRes, error) {
-
-	panic("xxx")
+	var orderDetail model.OrderItem
+	var detailRes pb.OrderItemDetailRes
+	r := internal.DB.Where(&model.OrderItem{BaseModel: model.BaseModel{ID: req.Id}, AccountId: req.AccountId}).First(&orderDetail)
+	if r.RowsAffected == 0 {
+		return nil, errors.New(custom_error.OrderNotFound)
+	}
+	res := ConverOrderItemModel2Pb(orderDetail)
+	detailRes.Order = res
+	var orderProductList []model.OrderProduct
+	internal.DB.Where(&model.OrderProduct{OrderId: orderDetail.ID}).Find(&orderProductList)
+	for _, product := range orderProductList {
+		orderProudctRes := ConverOrderProductModel2Pb(product)
+		detailRes.ProductList = append(detailRes.ProductList, orderProudctRes)
+	}
+	return &detailRes, nil
 }
 
 //更改状态
 func (s CartOrderServer) ChangeOrderStatus(c context.Context, req *pb.OrderStatus) (*emptypb.Empty, error) {
-	panic("xxx")
+	r := internal.DB.Model(&model.OrderItem{}).Where("order_no=?", req.OrderNum).Update("status=?", req.Status)
+	if r.RowsAffected == 0 {
+		return nil, errors.New(custom_error.OrderNotFound)
+	}
+	return &emptypb.Empty{}, nil
 }
 
 func ConverOrderItemModel2Pb(req model.OrderItem) *pb.OrderItemRes {
@@ -61,5 +80,17 @@ func ConverOrderItemModel2Pb(req model.OrderItem) *pb.OrderItemRes {
 	res.PostCode = req.PostCode
 	res.Receiver = req.Receiver
 	res.Status = req.Status
+	return &res
+}
+
+func ConverOrderProductModel2Pb(req model.OrderProduct) *pb.OrderProductRes {
+	var res pb.OrderProductRes
+	res.Id = req.ID
+	res.CoverImg = req.CoverImg
+	res.Num = req.Num
+	res.OrderId = req.OrderId
+	res.ProductId = req.ProductId
+	res.ProductName = req.ProductName
+	res.RealPrice = req.RealPrice
 	return &res
 }
