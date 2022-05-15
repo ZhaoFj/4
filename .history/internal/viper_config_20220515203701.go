@@ -2,7 +2,6 @@ package internal
 
 import (
 	"encoding/json"
-	"micro-trainning-part4/cartOrder_srv/proto/pb"
 
 	"github.com/nacos-group/nacos-sdk-go/clients"
 	"github.com/nacos-group/nacos-sdk-go/common/constant"
@@ -11,12 +10,8 @@ import (
 )
 
 var (
-	AppConf        AppConfig
-	NacosConf      NacosConfig
-	ShopCartClient pb.ShopCartServiceClient
-	OrderClient    pb.OrderServiceClient
-	ProductClient  pb.ProductServiceClient
-	StockClient    pb.StockServiceClient
+	AppConf   AppConfig
+	NacosConf NacosConfig
 )
 
 func initNacos() {

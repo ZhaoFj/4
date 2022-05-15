@@ -9,36 +9,11 @@ import (
 	"micro-trainning-part4/internal"
 	"micro-trainning-part4/util"
 
-	"go.uber.org/zap"
 	"google.golang.org/protobuf/types/known/emptypb"
 )
 
 //新建订单
 func (s CartOrderServer) CreateOrder(c context.Context, req *pb.OrderItemReq) (*pb.OrderItemRes, error) {
-	/*
-		1 拿到购物车内选定的商品
-		2 计算订单总金额
-		3 扣减库存
-		4 将订单数据写入数据库 orderItem 和 orderProduct 表
-		5 删除购物车内已购买商品
-	*/
-	var productIds []int32
-	var cartList []model.ShopCart
-	productNumMap := make(map[int32]int32)
-	r := internal.DB.Where(&model.ShopCart{AccountId: req.AccountId, Checked: true}).Find(&cartList)
-	if r.RowsAffected == 0 {
-		return nil, errors.New(custom_error.ProductNotChecked)
-	}
-	for _, item := range cartList {
-		productIds = append(productIds, item.ProductId)
-		productNumMap[item.ProductId] = item.Num
-	}
-	res, err := internal.ProductClient.BatchGetProduct(context.Background(), &pb.BatchProductIdReq{Ids: productIds})
-	if err != nil {
-		zap.S().Error("[BatchGetProduct调用失败]", err)
-		return nil, errors.New(custom_error.InternalServerError)
-	}
-
 	panic("xxx")
 }
 

@@ -2,7 +2,6 @@ package internal
 
 import (
 	"encoding/json"
-	"micro-trainning-part4/cartOrder_srv/proto/pb"
 
 	"github.com/nacos-group/nacos-sdk-go/clients"
 	"github.com/nacos-group/nacos-sdk-go/common/constant"
@@ -10,14 +9,8 @@ import (
 	"github.com/spf13/viper"
 )
 
-var (
-	AppConf        AppConfig
-	NacosConf      NacosConfig
-	ShopCartClient pb.ShopCartServiceClient
-	OrderClient    pb.OrderServiceClient
-	ProductClient  pb.ProductServiceClient
-	StockClient    pb.StockServiceClient
-)
+var AppConf AppConfig
+var NacosConf NacosConfig
 
 func initNacos() {
 	v := viper.New()

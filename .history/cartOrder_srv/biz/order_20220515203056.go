@@ -9,7 +9,6 @@ import (
 	"micro-trainning-part4/internal"
 	"micro-trainning-part4/util"
 
-	"go.uber.org/zap"
 	"google.golang.org/protobuf/types/known/emptypb"
 )
 
@@ -25,20 +24,7 @@ func (s CartOrderServer) CreateOrder(c context.Context, req *pb.OrderItemReq) (*
 	var productIds []int32
 	var cartList []model.ShopCart
 	productNumMap := make(map[int32]int32)
-	r := internal.DB.Where(&model.ShopCart{AccountId: req.AccountId, Checked: true}).Find(&cartList)
-	if r.RowsAffected == 0 {
-		return nil, errors.New(custom_error.ProductNotChecked)
-	}
-	for _, item := range cartList {
-		productIds = append(productIds, item.ProductId)
-		productNumMap[item.ProductId] = item.Num
-	}
-	res, err := internal.ProductClient.BatchGetProduct(context.Background(), &pb.BatchProductIdReq{Ids: productIds})
-	if err != nil {
-		zap.S().Error("[BatchGetProduct调用失败]", err)
-		return nil, errors.New(custom_error.InternalServerError)
-	}
-
+	internal.DB.Where(&model.ShopCart{AccountId: req.AccountId})
 	panic("xxx")
 }
 

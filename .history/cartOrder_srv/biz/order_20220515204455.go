@@ -35,10 +35,9 @@ func (s CartOrderServer) CreateOrder(c context.Context, req *pb.OrderItemReq) (*
 	}
 	res, err := internal.ProductClient.BatchGetProduct(context.Background(), &pb.BatchProductIdReq{Ids: productIds})
 	if err != nil {
-		zap.S().Error("[BatchGetProduct调用失败]", err)
 		return nil, errors.New(custom_error.InternalServerError)
+		zap.S().Error("[BatchGetProduct调用失败]", err)
 	}
-
 	panic("xxx")
 }
 

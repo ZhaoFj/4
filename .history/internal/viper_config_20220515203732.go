@@ -15,8 +15,6 @@ var (
 	NacosConf      NacosConfig
 	ShopCartClient pb.ShopCartServiceClient
 	OrderClient    pb.OrderServiceClient
-	ProductClient  pb.ProductServiceClient
-	StockClient    pb.StockServiceClient
 )
 
 func initNacos() {
