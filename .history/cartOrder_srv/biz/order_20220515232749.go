@@ -100,9 +100,7 @@ func (s CartOrderServer) CreateOrder(c context.Context, req *pb.OrderItemReq) (*
 	}
 	tx.Commit()
 
-	orderItemRes := ConverOrderItemModel2Pb(orderItem)
-
-	return orderItemRes, nil
+	return &emptypb.Empty, nil
 }
 
 //订单列表

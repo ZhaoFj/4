@@ -9,7 +9,6 @@ import (
 	"micro-trainning-part4/internal"
 	"micro-trainning-part4/util"
 
-	"github.com/nacos-group/nacos-sdk-go/inner/uuid"
 	"go.uber.org/zap"
 	"google.golang.org/protobuf/types/known/emptypb"
 )
@@ -40,69 +39,19 @@ func (s CartOrderServer) CreateOrder(c context.Context, req *pb.OrderItemReq) (*
 		return nil, errors.New(custom_error.InternalServerError)
 	}
 
-	//计算价格
 	var amount float32
 	var stockItemList []*pb.ProductStockItem
-	var orderProductList []model.OrderProduct
 	for _, item := range res.ItemList {
 		amount += item.RealPrice * float32(productNumMap[item.Id])
 		stockItemList = append(stockItemList, &pb.ProductStockItem{ProductId: item.Id, Num: productNumMap[item.Id]})
-		var orderProduct = model.OrderProduct{
-			OrderId:     req.Id,
-			ProductId:   item.Id,
-			ProductName: item.Name,
-			CoverImg:    item.CoverImage,
-			RealPrice:   item.RealPrice,
-			Num:         productNumMap[item.Id],
-		}
-		orderProductList = append(orderProductList, orderProduct)
 	}
 
-	//扣减库存
 	_, err = internal.StockClient.Sell(context.Background(), &pb.SellItem{StockItemList: stockItemList})
 	if err != nil {
 		return nil, errors.New(custom_error.StockNotEnough)
 	}
 
-	//创建订单
-	tx := internal.DB.Begin()
-	var orderItem model.OrderItem
-	orderItem.AccountId = req.Id
-	uuid, _ := uuid.NewV4()
-	orderItem.OrderNum = uuid.String()
-	orderItem.Status = "unPay"
-	orderItem.Addr = req.Addr
-	orderItem.Receiver = req.Receiver
-	orderItem.ReceiverMobile = req.Mobile
-	orderItem.PostCode = req.PostCode
-	orderItem.OrderAmount = amount
-
-	result := tx.Save(&orderItem)
-	if result.Error != nil || result.RowsAffected < 1 {
-		tx.Rollback()
-		return nil, errors.New(custom_error.CreateOrderFailed)
-	}
-
-	for _, item := range orderProductList {
-		item.OrderId = orderItem.ID
-	}
-	result = tx.CreateInBatches(orderProductList, 50)
-	if result.Error != nil || result.RowsAffected < 1 {
-		tx.Rollback()
-		return nil, errors.New(custom_error.CreateOrderFailed)
-	}
-
-	//删除购物车已下单商品
-	result = tx.Where(&model.ShopCart{Checked: true, AccountId: req.AccountId}).Delete(&model.ShopCart{})
-	if result.Error != nil || result.RowsAffected < 1 {
-		tx.Rollback()
-		return nil, errors.New(custom_error.CreateOrderFailed)
-	}
-	tx.Commit()
-
-	orderItemRes := ConverOrderItemModel2Pb(orderItem)
-
-	return orderItemRes, nil
+	panic("xxx")
 }
 
 //订单列表

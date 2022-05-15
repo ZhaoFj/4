@@ -64,7 +64,6 @@ func (s CartOrderServer) CreateOrder(c context.Context, req *pb.OrderItemReq) (*
 		return nil, errors.New(custom_error.StockNotEnough)
 	}
 
-	//创建订单
 	tx := internal.DB.Begin()
 	var orderItem model.OrderItem
 	orderItem.AccountId = req.Id
@@ -77,32 +76,7 @@ func (s CartOrderServer) CreateOrder(c context.Context, req *pb.OrderItemReq) (*
 	orderItem.PostCode = req.PostCode
 	orderItem.OrderAmount = amount
 
-	result := tx.Save(&orderItem)
-	if result.Error != nil || result.RowsAffected < 1 {
-		tx.Rollback()
-		return nil, errors.New(custom_error.CreateOrderFailed)
-	}
-
-	for _, item := range orderProductList {
-		item.OrderId = orderItem.ID
-	}
-	result = tx.CreateInBatches(orderProductList, 50)
-	if result.Error != nil || result.RowsAffected < 1 {
-		tx.Rollback()
-		return nil, errors.New(custom_error.CreateOrderFailed)
-	}
-
-	//删除购物车已下单商品
-	result = tx.Where(&model.ShopCart{Checked: true, AccountId: req.AccountId}).Delete(&model.ShopCart{})
-	if result.Error != nil || result.RowsAffected < 1 {
-		tx.Rollback()
-		return nil, errors.New(custom_error.CreateOrderFailed)
-	}
-	tx.Commit()
-
-	orderItemRes := ConverOrderItemModel2Pb(orderItem)
-
-	return orderItemRes, nil
+	panic("xxx")
 }
 
 //订单列表
