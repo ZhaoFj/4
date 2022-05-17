@@ -8,13 +8,18 @@ import (
 	"micro-trainning-part4/cartOrder_srv/biz"
 	"micro-trainning-part4/cartOrder_srv/proto/pb"
 	"micro-trainning-part4/custom_error"
-	"micro-trainning-part4/internal"
 	"micro-trainning-part4/shopcart_web/req"
 
 	"github.com/gin-gonic/gin"
 	_ "github.com/mbobakov/grpc-consul-resolver" // It's important
 	"go.uber.org/zap"
 )
+
+var shopCartServiceClient pb.ShopCartServiceClient
+
+func init() {
+
+}
 
 func CartOrderListHandler(c *gin.Context) {
 	accountIdStr := c.DefaultQuery("accountId", "0")
@@ -27,7 +32,7 @@ func CartOrderListHandler(c *gin.Context) {
 	}
 	var req pb.AccountReq
 	req.AccountId = int32(accountId)
-	res, err := internal.ShopCartClient.ShopCartItemList(context.Background(), &req)
+	res, err := internal.shopCartClient.ShopCartItemList(context.Background(), &req)
 	if err != nil {
 		c.JSON(http.StatusOK, gin.H{
 			"msg": custom_error.GetShopCartListFail,
@@ -52,7 +57,7 @@ func AddShopCartItemHandler(c *gin.Context) {
 		return
 	}
 	r := biz.ConverShopCartReq2pb(shopCartReq)
-	res, err := internal.ShopCartClient.AddShopCartItem(context.Background(), r)
+	res, err := shopCartServiceClient.AddShopCartItem(context.Background(), r)
 	if err != nil {
 		zap.S().Error(err)
 		c.JSON(http.StatusOK, gin.H{
@@ -77,7 +82,7 @@ func UpdateShopCartItemHandler(c *gin.Context) {
 		return
 	}
 	r := biz.ConverShopCartReq2pb(shopCartReq)
-	_, err = internal.ShopCartClient.UpdateShopCartItem(context.Background(), r)
+	_, err = shopCartServiceClient.UpdateShopCartItem(context.Background(), r)
 	if err != nil {
 		zap.S().Error(err)
 		c.JSON(http.StatusOK, gin.H{
@@ -101,7 +106,7 @@ func DeleteShopCartItemHandler(c *gin.Context) {
 		return
 	}
 	r := biz.ConverDelShopCartReq2pb(delShopCartReq)
-	_, err = internal.ShopCartClient.DeleteShopCartItem(context.Background(), r)
+	_, err = shopCartServiceClient.DeleteShopCartItem(context.Background(), r)
 	if err != nil {
 		zap.S().Error(err)
 		c.JSON(http.StatusOK, gin.H{

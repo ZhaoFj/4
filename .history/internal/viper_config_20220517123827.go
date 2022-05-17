@@ -5,11 +5,9 @@ import (
 	"fmt"
 	"micro-trainning-part4/cartOrder_srv/proto/pb"
 
-	"github.com/grpc-ecosystem/grpc-opentracing/go/otgrpc"
 	"github.com/nacos-group/nacos-sdk-go/clients"
 	"github.com/nacos-group/nacos-sdk-go/common/constant"
 	"github.com/nacos-group/nacos-sdk-go/vo"
-	"github.com/opentracing/opentracing-go"
 	"github.com/spf13/viper"
 	"go.uber.org/zap"
 	"google.golang.org/grpc"
@@ -113,7 +111,6 @@ func initGrpcClient() {
 	productConn, err := grpc.Dial(
 		productSrvAddr,
 		grpc.WithInsecure(),
-		grpc.WithUnaryInterceptor(otgrpc.OpenTracingClientInterceptor(opentracing.GlobalTracer())),
 	)
 	if err != nil {
 		s := fmt.Sprintf("productSrv-GRPC拨号失败:%s", err.Error())
@@ -122,16 +119,6 @@ func initGrpcClient() {
 	}
 	ProductClient = pb.NewProductServiceClient(productConn)
 
-	stockSrvAddr := fmt.Sprintf("%s:%d", AppConf.StockSrvConfig.Host, AppConf.StockSrvConfig.Port)
-	stockConn, err := grpc.Dial(
-		stockSrvAddr,
-		grpc.WithInsecure(),
-	)
-	if err != nil {
-		s := fmt.Sprintf("stockSrv-GRPC拨号失败:%s", err.Error())
-		zap.S().Fatal(s)
-		panic(err)
-	}
-	ProductClient = pb.NewProductServiceClient(stockConn)
+	stockSrvAddr := fmt.Sprintf("%s:%d", Appconf.StockSrvConfig.Host, Appconf.StockSrvConfig.Port)
 
 }

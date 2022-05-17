@@ -16,6 +16,12 @@ import (
 	"go.uber.org/zap"
 )
 
+var shopCartServiceClient pb.ShopCartServiceClient
+
+func init() {
+
+}
+
 func CartOrderListHandler(c *gin.Context) {
 	accountIdStr := c.DefaultQuery("accountId", "0")
 	accountId, err := strconv.Atoi(accountIdStr)
@@ -52,7 +58,7 @@ func AddShopCartItemHandler(c *gin.Context) {
 		return
 	}
 	r := biz.ConverShopCartReq2pb(shopCartReq)
-	res, err := internal.ShopCartClient.AddShopCartItem(context.Background(), r)
+	res, err := shopCartServiceClient.AddShopCartItem(context.Background(), r)
 	if err != nil {
 		zap.S().Error(err)
 		c.JSON(http.StatusOK, gin.H{
@@ -77,7 +83,7 @@ func UpdateShopCartItemHandler(c *gin.Context) {
 		return
 	}
 	r := biz.ConverShopCartReq2pb(shopCartReq)
-	_, err = internal.ShopCartClient.UpdateShopCartItem(context.Background(), r)
+	_, err = shopCartServiceClient.UpdateShopCartItem(context.Background(), r)
 	if err != nil {
 		zap.S().Error(err)
 		c.JSON(http.StatusOK, gin.H{
@@ -101,7 +107,7 @@ func DeleteShopCartItemHandler(c *gin.Context) {
 		return
 	}
 	r := biz.ConverDelShopCartReq2pb(delShopCartReq)
-	_, err = internal.ShopCartClient.DeleteShopCartItem(context.Background(), r)
+	_, err = shopCartServiceClient.DeleteShopCartItem(context.Background(), r)
 	if err != nil {
 		zap.S().Error(err)
 		c.JSON(http.StatusOK, gin.H{

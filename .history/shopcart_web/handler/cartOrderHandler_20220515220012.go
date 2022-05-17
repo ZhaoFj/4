@@ -2,6 +2,7 @@ package handler
 
 import (
 	"context"
+	"fmt"
 	"net/http"
 	"strconv"
 
@@ -14,7 +15,22 @@ import (
 	"github.com/gin-gonic/gin"
 	_ "github.com/mbobakov/grpc-consul-resolver" // It's important
 	"go.uber.org/zap"
+	"google.golang.org/grpc"
 )
+
+var shopCartServiceClient pb.ShopCartServiceClient
+
+func init() {
+	addr := fmt.Sprintf("%s:%d", internal.AppConf.ConsulConfig.Host, internal.AppConf.ConsulConfig.Port)
+	dailAddr := fmt.Sprintf("consul://%s/%s?wait=14s", addr, internal.AppConf.ShopCartSrvConfig.SrvName)
+	conn, err := grpc.Dial(dailAddr, grpc.WithInsecure(), grpc.WithDefaultServiceConfig(`{"loadBalancingPolicy": "round_robin"}`))
+	if err != nil {
+		s := fmt.Sprintf("ShopCartHandler-GRPC拨号失败:%s", err.Error())
+		zap.S().Fatal(s)
+	}
+
+	shopCartServiceClient = pb.NewShopCartServiceClient(conn)
+}
 
 func CartOrderListHandler(c *gin.Context) {
 	accountIdStr := c.DefaultQuery("accountId", "0")
@@ -27,7 +43,7 @@ func CartOrderListHandler(c *gin.Context) {
 	}
 	var req pb.AccountReq
 	req.AccountId = int32(accountId)
-	res, err := internal.ShopCartClient.ShopCartItemList(context.Background(), &req)
+	res, err := shopCartServiceClient.ShopCartItemList(context.Background(), &req)
 	if err != nil {
 		c.JSON(http.StatusOK, gin.H{
 			"msg": custom_error.GetShopCartListFail,
@@ -52,7 +68,7 @@ func AddShopCartItemHandler(c *gin.Context) {
 		return
 	}
 	r := biz.ConverShopCartReq2pb(shopCartReq)
-	res, err := internal.ShopCartClient.AddShopCartItem(context.Background(), r)
+	res, err := shopCartServiceClient.AddShopCartItem(context.Background(), r)
 	if err != nil {
 		zap.S().Error(err)
 		c.JSON(http.StatusOK, gin.H{
@@ -77,7 +93,7 @@ func UpdateShopCartItemHandler(c *gin.Context) {
 		return
 	}
 	r := biz.ConverShopCartReq2pb(shopCartReq)
-	_, err = internal.ShopCartClient.UpdateShopCartItem(context.Background(), r)
+	_, err = shopCartServiceClient.UpdateShopCartItem(context.Background(), r)
 	if err != nil {
 		zap.S().Error(err)
 		c.JSON(http.StatusOK, gin.H{
@@ -101,7 +117,7 @@ func DeleteShopCartItemHandler(c *gin.Context) {
 		return
 	}
 	r := biz.ConverDelShopCartReq2pb(delShopCartReq)
-	_, err = internal.ShopCartClient.DeleteShopCartItem(context.Background(), r)
+	_, err = shopCartServiceClient.DeleteShopCartItem(context.Background(), r)
 	if err != nil {
 		zap.S().Error(err)
 		c.JSON(http.StatusOK, gin.H{

@@ -77,7 +77,7 @@ func UpdateShopCartItemHandler(c *gin.Context) {
 		return
 	}
 	r := biz.ConverShopCartReq2pb(shopCartReq)
-	_, err = internal.ShopCartClient.UpdateShopCartItem(context.Background(), r)
+	_, err = shopCartServiceClient.UpdateShopCartItem(context.Background(), r)
 	if err != nil {
 		zap.S().Error(err)
 		c.JSON(http.StatusOK, gin.H{
@@ -101,7 +101,7 @@ func DeleteShopCartItemHandler(c *gin.Context) {
 		return
 	}
 	r := biz.ConverDelShopCartReq2pb(delShopCartReq)
-	_, err = internal.ShopCartClient.DeleteShopCartItem(context.Background(), r)
+	_, err = shopCartServiceClient.DeleteShopCartItem(context.Background(), r)
 	if err != nil {
 		zap.S().Error(err)
 		c.JSON(http.StatusOK, gin.H{

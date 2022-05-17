@@ -14,20 +14,6 @@ type ShopCartWebConfig struct {
 	Tags    []string `mapstructure:"tags" json:"tags"`
 }
 
-type ProductSrvConfig struct {
-	SrvName string   `mapstructure:"srvName" json:"srvName"`
-	Host    string   `mapstructure:"host" json:"host"`
-	Port    int      `mapstructure:"port" json:"port"`
-	Tags    []string `mapstructure:"tags" json:"tags"`
-}
-
-type StockSrvConfig struct {
-	SrvName string   `mapstructure:"srvName" json:"srvName"`
-	Host    string   `mapstructure:"host" json:"host"`
-	Port    int      `mapstructure:"port" json:"port"`
-	Tags    []string `mapstructure:"tags" json:"tags"`
-}
-
 type DBConfig struct {
 	Host     string `mapstructure:"host"`
 	Port     int    `mapstructure:"port"`
@@ -42,8 +28,6 @@ type AppConfig struct {
 	JaegerConfig      JaegerConfig      `mapstructure:"jaeger" json:"jaeger"`
 	ShopCartSrvConfig ShopCartSrvConfig `mapstructure:"shopcart_srv" json:"shopcart_srv"`
 	ShopCartWebConfig ShopCartWebConfig `mapstructure:"shopcart_web" json:"shopcart_web"`
-	ProductSrvConfig  ProductSrvConfig  `mapstructure:"product_srv" json:"product_srv"`
-	StockSrvConfig    StockSrvConfig    `mapstructure:"stock_srv" json:"stock_srv"`
 	JWTConf           JWTConfig         `mapstructure:"jwt" json:"jwt"`
 	Debug             bool              `mapstructure:"debug" json:"debug"`
 }
