@@ -6,7 +6,6 @@ import (
 	"micro-trainning-part4/internal"
 	"micro-trainning-part4/internal/register"
 	"micro-trainning-part4/shopcart_web/handler"
-	"micro-trainning-part4/shopcart_web/middleware"
 	"micro-trainning-part4/util"
 	"os"
 	"os/signal"
@@ -45,18 +44,12 @@ func main() {
 	flag.Parse()
 	addr := fmt.Sprintf("%s:%d", *ip, port)
 	r := gin.Default()
-	cartGroup := r.Group("/v1/shopcart").Use(middleware.Tracing())
+	cartGroup := r.Group("/v1/shopcart")
 	{
 		cartGroup.GET("/list", handler.CartOrderListHandler)
 		cartGroup.POST("/add", handler.AddShopCartItemHandler)
 		cartGroup.POST("/update", handler.UpdateShopCartItemHandler)
 		cartGroup.POST("/delete", handler.DeleteShopCartItemHandler)
-	}
-	orderGroup := r.Group("/v1/order").Use(middleware.Tracing())
-	{
-		orderGroup.GET("/list", handler.OrderListHandler)
-		orderGroup.GET("/:id", handler.OrderDetailHandler)
-		orderGroup.POST("/add", handler.CreaterOrderHandler)
 	}
 	r.GET("/health", handler.HealthHandler)
 

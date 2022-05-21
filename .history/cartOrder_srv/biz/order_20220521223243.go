@@ -77,7 +77,7 @@ func (s CartOrderServer) CreateOrder(c context.Context, req *pb.OrderItemReq) (*
 	//创建订单
 	tx := internal.DB.Begin()
 	var orderItem model.OrderItem
-	orderItem.AccountId = req.AccountId
+	orderItem.AccountId = req.Id
 	uuid, _ := uuid.NewV4()
 	orderItem.OrderNum = uuid.String()
 	orderItem.Status = "unPay"

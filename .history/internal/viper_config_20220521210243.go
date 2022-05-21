@@ -28,7 +28,6 @@ var (
 func init() {
 	initNacos()
 	initFromNacos()
-	initGrpcClient()
 	//fmt.Println("Nacos初始化完成")
 
 }

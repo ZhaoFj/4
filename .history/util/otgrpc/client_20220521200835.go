@@ -47,14 +47,14 @@ func OpenTracingClientInterceptor(tracer opentracing.Tracer, optFuncs ...Option)
 		}
 
 		//-------自己补充的-开始---------
-		webContext := ctx.Value("webContext")
-		switch webContext.(type) {
+		webContent := ctx.Value("webContext")
+		switch webContent.(type) {
 		case *gin.Context:
-			myTracer, exists := webContext.(*gin.Context).Get("tracer")
+			myTracer, exists := webContent.(*gin.Context).Get("tracer")
 			if exists {
 				tracer = myTracer.(opentracing.Tracer)
 			}
-			parentSpan, ok := webContext.(*gin.Context).Get("parentSpan")
+			parentSpan, ok := webContent.(*gin.Context).Get("parentSpan")
 			if ok {
 				parentCtx = parentSpan.(*jaeger.Span).Context()
 			}

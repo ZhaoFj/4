@@ -56,7 +56,7 @@ func main() {
 	{
 		orderGroup.GET("/list", handler.OrderListHandler)
 		orderGroup.GET("/:id", handler.OrderDetailHandler)
-		orderGroup.POST("/add", handler.CreaterOrderHandler)
+		orderGroup.GET("/add", handler.CreaterOrderHandler)
 	}
 	r.GET("/health", handler.HealthHandler)
 

@@ -55,7 +55,6 @@ func main() {
 
 	server := grpc.NewServer(grpc.UnaryInterceptor(otgrpc.OpenTracingServerInterceptor(tracer)))
 	pb.RegisterShopCartServiceServer(server, &biz.CartOrderServer{})
-	pb.RegisterOrderServiceServer(server, &biz.CartOrderServer{})
 	listen, err := net.Listen("tcp", addr)
 	if err != nil {
 		zap.S().Error("cartorder_srv启动异常:" + err.Error())

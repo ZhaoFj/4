@@ -52,12 +52,6 @@ func main() {
 		cartGroup.POST("/update", handler.UpdateShopCartItemHandler)
 		cartGroup.POST("/delete", handler.DeleteShopCartItemHandler)
 	}
-	orderGroup := r.Group("/v1/order").Use(middleware.Tracing())
-	{
-		orderGroup.GET("/list", handler.OrderListHandler)
-		orderGroup.GET("/:id", handler.OrderDetailHandler)
-		orderGroup.POST("/add", handler.CreaterOrderHandler)
-	}
 	r.GET("/health", handler.HealthHandler)
 
 	go func() {

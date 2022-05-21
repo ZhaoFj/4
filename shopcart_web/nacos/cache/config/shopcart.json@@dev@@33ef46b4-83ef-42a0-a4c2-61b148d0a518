@@ -35,5 +35,27 @@
   "jwt":{
     "key": "123456789"
   },
-  "debug": true
+  "debug": true,
+  "jaeger":{
+    "agentHost": "ddhanta.cn",
+    "agentPort": 6831
+  },
+  "product_srv": {
+    "srvName": "product_srv",
+    "host": "ddhanta.cn",
+    "port": 9096,
+    "tags": [
+      "zz",
+      "product_srv"
+    ]
+  },
+  "stock_srv": {
+    "srvName": "stock_srv",
+    "host": "ddhanta.cn",
+    "port": 9099,
+    "tags": [
+      "zz",
+      "stock_srv"
+    ]
+  }
 }

@@ -22,7 +22,7 @@ func (s CartOrderServer) CreateOrder(c context.Context, req *pb.OrderItemReq) (*
 		4 将订单数据写入数据库 orderItem 和 orderProduct 表
 		5 删除购物车内已购买商品
 	*/
-	//var productIds []int32
+	var productIds []int32
 	var cartList []model.ShopCart
 	productNumMap := make(map[int32]int32)
 	r := internal.DB.Where(&model.ShopCart{AccountId: req.AccountId, Checked: true}).Find(&cartList)
@@ -30,7 +30,7 @@ func (s CartOrderServer) CreateOrder(c context.Context, req *pb.OrderItemReq) (*
 		return nil, errors.New(custom_error.ProductNotChecked)
 	}
 	for _, item := range cartList {
-		//productIds = append(productIds, item.ProductId)
+		productIds = append(productIds, item.ProductId)
 		productNumMap[item.ProductId] = item.Num
 	}
 	// res, err := internal.ProductClient.BatchGetProduct(context.Background(), &pb.BatchProductIdReq{Ids: productIds})
@@ -38,15 +38,10 @@ func (s CartOrderServer) CreateOrder(c context.Context, req *pb.OrderItemReq) (*
 	// 	zap.S().Error("[BatchGetProduct调用失败]", err)
 	// 	return nil, errors.New(custom_error.InternalServerError)
 	// }
-	res := &pb.ProductRes{
+	res:=&pb.ProductRes{
 		Total: 1,
 		ItemList: []*pb.ProductItemRes{
-			{
-				Id:         3,
-				Name:       "商品2",
-				CoverImage: "cover_img_url",
-				RealPrice:  22.2,
-			},
+			Id
 		},
 	}
 
@@ -69,15 +64,15 @@ func (s CartOrderServer) CreateOrder(c context.Context, req *pb.OrderItemReq) (*
 	}
 
 	//扣减库存
-	// _, err := internal.StockClient.Sell(context.Background(), &pb.SellItem{StockItemList: stockItemList})
-	// if err != nil {
-	// 	return nil, errors.New(custom_error.StockNotEnough)
-	// }
+	_, err = internal.StockClient.Sell(context.Background(), &pb.SellItem{StockItemList: stockItemList})
+	if err != nil {
+		return nil, errors.New(custom_error.StockNotEnough)
+	}
 
 	//创建订单
 	tx := internal.DB.Begin()
 	var orderItem model.OrderItem
-	orderItem.AccountId = req.AccountId
+	orderItem.AccountId = req.Id
 	uuid, _ := uuid.NewV4()
 	orderItem.OrderNum = uuid.String()
 	orderItem.Status = "unPay"

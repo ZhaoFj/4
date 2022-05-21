@@ -8,6 +8,17 @@ import (
 	"testing"
 )
 
+// var shopCartServiceClient pb.ShopCartServiceClient
+
+// func init() {
+// 	addr := fmt.Sprintf("%s:%d", internal.AppConf.ShopCartSrvConfig.Host, internal.AppConf.ShopCartSrvConfig.Port)
+// 	conn, err := grpc.Dial(addr, grpc.WithInsecure())
+// 	if err != nil {
+// 		panic("grpc初始化失败")
+// 	}
+// 	shopCartServiceClient = pb.NewShopCartServiceClient(conn)
+// }
+
 func TestShopCartServer_AddShopCartItem(t *testing.T) {
 	shopCart := pb.ShopCartReq{
 		ProductId: 1,

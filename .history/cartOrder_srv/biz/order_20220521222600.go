@@ -69,15 +69,15 @@ func (s CartOrderServer) CreateOrder(c context.Context, req *pb.OrderItemReq) (*
 	}
 
 	//扣减库存
-	// _, err := internal.StockClient.Sell(context.Background(), &pb.SellItem{StockItemList: stockItemList})
-	// if err != nil {
-	// 	return nil, errors.New(custom_error.StockNotEnough)
-	// }
+	_, err := internal.StockClient.Sell(context.Background(), &pb.SellItem{StockItemList: stockItemList})
+	if err != nil {
+		return nil, errors.New(custom_error.StockNotEnough)
+	}
 
 	//创建订单
 	tx := internal.DB.Begin()
 	var orderItem model.OrderItem
-	orderItem.AccountId = req.AccountId
+	orderItem.AccountId = req.Id
 	uuid, _ := uuid.NewV4()
 	orderItem.OrderNum = uuid.String()
 	orderItem.Status = "unPay"

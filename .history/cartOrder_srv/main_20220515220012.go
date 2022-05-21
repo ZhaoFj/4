@@ -8,11 +8,7 @@ import (
 	"net"
 
 	"github.com/google/uuid"
-	"github.com/grpc-ecosystem/grpc-opentracing/go/otgrpc"
 	"github.com/hashicorp/consul/api"
-	"github.com/opentracing/opentracing-go"
-	"github.com/uber/jaeger-client-go"
-	jaegercfg "github.com/uber/jaeger-client-go/config"
 	"go.uber.org/zap"
 	"google.golang.org/grpc"
 	"google.golang.org/grpc/health"
@@ -33,29 +29,8 @@ func main() {
 
 	port := internal.AppConf.ShopCartSrvConfig.Port
 	addr := fmt.Sprintf("%s:%d", "0.0.0.0", port)
-
-	cfg := jaegercfg.Configuration{
-		Sampler: &jaegercfg.SamplerConfig{
-			Type:  jaeger.SamplerTypeConst,
-			Param: 1,
-		},
-		Reporter: &jaegercfg.ReporterConfig{
-			LogSpans:           true,
-			LocalAgentHostPort: "0.0.0.0:6831",
-		},
-		ServiceName: "hantaMall",
-	}
-	tracer, closer, err := cfg.NewTracer(jaegercfg.Logger(jaeger.StdLogger))
-	defer closer.Close()
-	if err != nil {
-		panic(err)
-	}
-
-	opentracing.SetGlobalTracer(tracer)
-
-	server := grpc.NewServer(grpc.UnaryInterceptor(otgrpc.OpenTracingServerInterceptor(tracer)))
+	server := grpc.NewServer()
 	pb.RegisterShopCartServiceServer(server, &biz.CartOrderServer{})
-	pb.RegisterOrderServiceServer(server, &biz.CartOrderServer{})
 	listen, err := net.Listen("tcp", addr)
 	if err != nil {
 		zap.S().Error("cartorder_srv启动异常:" + err.Error())

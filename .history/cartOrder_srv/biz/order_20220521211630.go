@@ -10,11 +10,15 @@ import (
 	"micro-trainning-part4/util"
 
 	"github.com/nacos-group/nacos-sdk-go/inner/uuid"
+	"go.uber.org/zap"
 	"google.golang.org/protobuf/types/known/emptypb"
 )
 
+type OrderServer struct {
+}
+
 //新建订单
-func (s CartOrderServer) CreateOrder(c context.Context, req *pb.OrderItemReq) (*pb.OrderItemRes, error) {
+func (s OrderServer) CreateOrder(c context.Context, req *pb.OrderItemReq) (*pb.OrderItemRes, error) {
 	/*
 		1 拿到购物车内选定的商品
 		2 计算订单总金额
@@ -22,7 +26,7 @@ func (s CartOrderServer) CreateOrder(c context.Context, req *pb.OrderItemReq) (*
 		4 将订单数据写入数据库 orderItem 和 orderProduct 表
 		5 删除购物车内已购买商品
 	*/
-	//var productIds []int32
+	var productIds []int32
 	var cartList []model.ShopCart
 	productNumMap := make(map[int32]int32)
 	r := internal.DB.Where(&model.ShopCart{AccountId: req.AccountId, Checked: true}).Find(&cartList)
@@ -30,24 +34,13 @@ func (s CartOrderServer) CreateOrder(c context.Context, req *pb.OrderItemReq) (*
 		return nil, errors.New(custom_error.ProductNotChecked)
 	}
 	for _, item := range cartList {
-		//productIds = append(productIds, item.ProductId)
+		productIds = append(productIds, item.ProductId)
 		productNumMap[item.ProductId] = item.Num
 	}
-	// res, err := internal.ProductClient.BatchGetProduct(context.Background(), &pb.BatchProductIdReq{Ids: productIds})
-	// if err != nil {
-	// 	zap.S().Error("[BatchGetProduct调用失败]", err)
-	// 	return nil, errors.New(custom_error.InternalServerError)
-	// }
-	res := &pb.ProductRes{
-		Total: 1,
-		ItemList: []*pb.ProductItemRes{
-			{
-				Id:         3,
-				Name:       "商品2",
-				CoverImage: "cover_img_url",
-				RealPrice:  22.2,
-			},
-		},
+	res, err := internal.ProductClient.BatchGetProduct(context.Background(), &pb.BatchProductIdReq{Ids: productIds})
+	if err != nil {
+		zap.S().Error("[BatchGetProduct调用失败]", err)
+		return nil, errors.New(custom_error.InternalServerError)
 	}
 
 	//计算价格
@@ -69,15 +62,15 @@ func (s CartOrderServer) CreateOrder(c context.Context, req *pb.OrderItemReq) (*
 	}
 
 	//扣减库存
-	// _, err := internal.StockClient.Sell(context.Background(), &pb.SellItem{StockItemList: stockItemList})
-	// if err != nil {
-	// 	return nil, errors.New(custom_error.StockNotEnough)
-	// }
+	_, err = internal.StockClient.Sell(context.Background(), &pb.SellItem{StockItemList: stockItemList})
+	if err != nil {
+		return nil, errors.New(custom_error.StockNotEnough)
+	}
 
 	//创建订单
 	tx := internal.DB.Begin()
 	var orderItem model.OrderItem
-	orderItem.AccountId = req.AccountId
+	orderItem.AccountId = req.Id
 	uuid, _ := uuid.NewV4()
 	orderItem.OrderNum = uuid.String()
 	orderItem.Status = "unPay"
@@ -116,7 +109,7 @@ func (s CartOrderServer) CreateOrder(c context.Context, req *pb.OrderItemReq) (*
 }
 
 //订单列表
-func (s CartOrderServer) OrderList(c context.Context, req *pb.OrderPagingReq) (*pb.OrderListRes, error) {
+func (s OrderServer) OrderList(c context.Context, req *pb.OrderPagingReq) (*pb.OrderListRes, error) {
 	var orderList []model.OrderItem
 	var res pb.OrderListRes
 	var total int64
@@ -138,7 +131,7 @@ func (s CartOrderServer) OrderList(c context.Context, req *pb.OrderPagingReq) (*
 }
 
 //订单详情
-func (s CartOrderServer) OrderDetail(c context.Context, req *pb.OrderItemReq) (*pb.OrderItemDetailRes, error) {
+func (s OrderServer) OrderDetail(c context.Context, req *pb.OrderItemReq) (*pb.OrderItemDetailRes, error) {
 	var orderDetail model.OrderItem
 	var detailRes pb.OrderItemDetailRes
 	r := internal.DB.Where(&model.OrderItem{BaseModel: model.BaseModel{ID: req.Id}, AccountId: req.AccountId}).First(&orderDetail)
@@ -157,7 +150,7 @@ func (s CartOrderServer) OrderDetail(c context.Context, req *pb.OrderItemReq) (*
 }
 
 //更改状态
-func (s CartOrderServer) ChangeOrderStatus(c context.Context, req *pb.OrderStatus) (*emptypb.Empty, error) {
+func (s OrderServer) ChangeOrderStatus(c context.Context, req *pb.OrderStatus) (*emptypb.Empty, error) {
 	r := internal.DB.Model(&model.OrderItem{}).Where("order_no=?", req.OrderNum).Update("status=?", req.Status)
 	if r.RowsAffected == 0 {
 		return nil, errors.New(custom_error.OrderNotFound)
