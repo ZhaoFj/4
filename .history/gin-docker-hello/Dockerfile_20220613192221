@@ -1,0 +1,8 @@
+FROM golang
+
+
+
+WORKDIR /go
+COPY gin_docker_hello /go/
+EXPOSE 8080
+ENTRYPOINT ["/go/gin_docker_hello"]

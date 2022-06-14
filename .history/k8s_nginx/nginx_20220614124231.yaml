@@ -1,0 +1,49 @@
+apiVersion: apps/v1
+kind: Deployment
+metadata:
+  name: nginx-deploy
+spec:
+  replicas: 2
+  selector:
+    matchLabels:
+      app: nginx
+  template:
+    metadata:
+      labels:
+        app: nginx
+    spec:
+      volumes:
+      - name: nginx-conf
+        hostPath:
+          path: /k8s/nginx/conf.d
+      - name: nginx-www
+        hostPath:
+          path: /k8s/nginx/www
+      - name: nginx-log
+        hostPath:
+          path: /k8s/nginx/log
+      containers:
+      - name: nginx
+        image: nginx:1.22
+        ports:
+        - containerPort: 80
+        volumeMounts:
+        - name: nginx-conf
+          mountPath: /etc/nginx/conf.d
+        - name: nginx-www
+          mountPath: /usr/share/nginx
+        - name: nginx-log
+          mountPath: /var/log/nginx
+---
+apiVersion: v1
+kind: Service
+metadata:
+  name: nginxservice
+spec:
+  type: NodePort
+  ports:
+  - name: http
+    port: 80
+    nodePort: 30081
+  selector:
+    app: nginx

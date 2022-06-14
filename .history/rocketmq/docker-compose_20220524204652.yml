@@ -1,0 +1,14 @@
+version: '3.5'
+services:
+  rmqnamesrv:
+    image: foxiswho/rocketmq:server
+    container_name: rmqnamesrv
+    ports:
+      - "9876:9876"
+    volumes:
+      - ./logs:/opt/logs
+      - ./store:/opt/store
+    networks:
+      rmq:
+        aliases:
+          - rmqnamesrv
